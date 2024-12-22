@@ -5,7 +5,9 @@
   "description": "AI Chat Assistant using Gemini",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "unlimitedStorage",
+    "webRequest"
   ],
   "host_permissions": [
     "https://generativelanguage.googleapis.com/*"
@@ -17,6 +19,10 @@
       "css": ["styles.css"]
     }
   ],
+  "web_accessible_resources": [{
+    "resources": ["worker.js"],
+    "matches": ["<all_urls>"]
+  }],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -25,4 +31,4 @@
         "128": "icon.png"
       }
   }
-} 
+}
