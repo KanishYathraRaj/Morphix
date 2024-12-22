@@ -23,7 +23,6 @@ document.getElementById('getHTML').addEventListener('click', async () => {
         // Replace in the entire document
         replaceText(document.body);
 
-        // Also replace in attributes like title, alt, etc.
         document.querySelectorAll('*').forEach(element => {
           Array.from(element.attributes).forEach(attr => {
             if (attr.value.includes('Netflix')) {

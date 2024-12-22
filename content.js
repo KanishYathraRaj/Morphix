@@ -1,4 +1,6 @@
 const API_KEY = 'AIzaSyDtRxzdQ1RLZNH2KSMtsNWP8ZKyIrtDBUo';
+const RATE_LIMIT_DELAY = 1000; // 1 second between requests
+let lastRequestTime = 0;
 
 function getPageContent() {
     const title = document.title;
@@ -22,6 +24,7 @@ class ChatMemory {
         this.messages = [];
         this.maxMessages = maxMessages;
         this.pageContext = null;
+        this.codeChanges = [];
     }
 
     initializeContext(pageContent) {
@@ -40,70 +43,100 @@ class ChatMemory {
             `${msg.role}: ${msg.content}`
         ).join('\n');
     }
+
+    addCodeChange(oldCode, newCode) {
+        this.codeChanges.push({ oldCode, newCode, timestamp: Date.now() });
+    }
 }
 
 async function generateResponse(prompt, chatMemory) {
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const MAX_RETRIES = 3;
+    let retries = 0;
 
-        const conversationHistory = chatMemory.getConversationContext();
-        
-        const fullPrompt = `
-            You are a helpful assistant that answers questions about a webpage.
-            
-            Previous conversation:
-            ${conversationHistory}
+    while (retries < MAX_RETRIES) {
+        try {
+            console.log(`Attempt ${retries + 1} of ${MAX_RETRIES}`);
 
-            Webpage Context (reference this for page-specific information):
-            ${chatMemory.pageContext}
+            // Exponential backoff for retries
+            if (retries > 0) {
+                const backoffDelay = RATE_LIMIT_DELAY * Math.pow(2, retries);
+                console.log(`Retry backoff: waiting ${backoffDelay}ms`);
+                await new Promise(resolve => setTimeout(resolve, backoffDelay));
+            }
 
-            Current User Question: ${prompt}
+            // Regular rate limiting
+            const now = Date.now();
+            const timeSinceLastRequest = now - lastRequestTime;
+            if (timeSinceLastRequest < RATE_LIMIT_DELAY) {
+                const waitTime = RATE_LIMIT_DELAY - timeSinceLastRequest;
+                console.log(`Rate limit: waiting ${waitTime}ms`);
+                await new Promise(resolve => 
+                    setTimeout(resolve, waitTime)
+                );
+            }
+            lastRequestTime = Date.now();
 
-            Instructions: 
-            1. Use the conversation history for context
-            2. Reference the webpage content when needed
-            3. Provide direct and concise answers
-        `;
+            console.log('Making API request...', {
+                timestamp: new Date().toISOString(),
+                prompt: prompt.substring(0, 50) + '...'
+            });
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: fullPrompt
+            const fullPrompt = `
+                You are a code modification assistant. Given the current webpage code and user request,
+                respond ONLY with code changes in this exact format:
+                ###CODE_CHANGES_START###
+                OLD: <exact old code>
+                NEW: <new code>
+                ###CODE_CHANGES_END###
+                
+                Current webpage source:
+                ${getPageSource()}
+
+                User request: ${prompt}
+                
+                Important: 
+                1. Only respond with code changes in the exact format above
+                2. Make sure OLD code exactly matches existing code in the page
+                3. Include complete code blocks that can be found in the page
+                4. You can provide multiple OLD/NEW pairs for multiple changes
+                5. Do not include any explanations or additional text
+            `;
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${API_KEY}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: fullPrompt
+                        }]
                     }]
-                }],
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 1024
-                }
-            }),
-            signal: controller.signal
-        });
+                })
+            });
 
-        clearTimeout(timeoutId);
+            if (!response.ok) {
+                throw new Error(`API request failed with status ${response.status}`);
+            }
 
-        if (!response.ok) {
-            throw new Error(`API request failed with status ${response.status}`);
-        }
+            const data = await response.json();
+            console.log('API response received:', data);
 
-        const data = await response.json();
-        
-        if (data?.candidates?.[0]?.content?.parts?.[0]) {
             return data.candidates[0].content.parts[0].text;
-        } else {
-            throw new Error('Unexpected API response structure');
+
+        } catch (error) {
+            console.error('Error in API request:', {
+                error: error.message,
+                retry: retries + 1,
+                maxRetries: MAX_RETRIES
+            });
+            
+            retries++;
+            if (retries === MAX_RETRIES || !error.message.includes('429')) {
+                throw error;
+            }
         }
-    } catch (error) {
-        console.error('Error:', error);
-        if (error.name === 'AbortError') {
-            return 'Sorry, the request took too long. Please try again.';
-        }
-        return `Sorry, I encountered an error: ${error.message}`;
     }
 }
 
@@ -142,42 +175,41 @@ function createChatElements() {
         const message = chatInput.value.trim();
         if (!message) return;
 
-        // Initialize page context if not done yet
-        if (!chatMemory.pageContext) {
-            chatMemory.initializeContext(getPageContent());
-        }
-
-        // Add user message to memory and display
-        chatMemory.addMessage('User', message);
-        chatContent.innerHTML += `
-            <div class="user-message message">${message}</div>
-        `;
-
-        chatInput.value = '';
-        chatContent.scrollTop = chatContent.scrollHeight;
-
-        // Show typing indicator
-        const typingIndicator = document.createElement('div');
-        typingIndicator.className = 'bot-message message';
-        typingIndicator.textContent = 'Typing...';
-        chatContent.appendChild(typingIndicator);
-
         try {
             const response = await generateResponse(message, chatMemory);
-            chatMemory.addMessage('Assistant', response);
+            console.log('Raw response:', response);
             
-            chatContent.removeChild(typingIndicator);
-            chatContent.innerHTML += `
-                <div class="bot-message message">${response}</div>
-            `;
+            if (response.includes('###CODE_CHANGES_START###')) {
+                const changesSection = response
+                    .split('###CODE_CHANGES_START###')[1]
+                    .split('###CODE_CHANGES_END###')[0]
+                    .trim();
+                
+                console.log('Extracted changes section:', changesSection);
+                
+                const codeChanges = changesSection
+                    .split('OLD:')
+                    .filter(Boolean)
+                    .map(change => {
+                        const [oldCode, ...newParts] = change.split('NEW:');
+                        return {
+                            oldCode: oldCode.trim(),
+                            newCode: newParts.join('NEW:').trim() // Handle case where NEW: appears in code
+                        };
+                    });
+                
+                console.log('Parsed code changes:', codeChanges);
+                
+                // Apply changes
+                applyCodeChanges(codeChanges);
+            } else {
+                console.warn('No code changes found in response');
+            }
         } catch (error) {
-            chatContent.removeChild(typingIndicator);
-            chatContent.innerHTML += `
-                <div class="bot-message message">Sorry, I encountered an error. Please try again.</div>
-            `;
+            console.error('Error:', error);
         }
 
-        chatContent.scrollTop = chatContent.scrollHeight;
+        chatInput.value = '';
     }
 
     chatIcon.addEventListener('click', () => {
@@ -200,6 +232,119 @@ function createChatElements() {
             modal.classList.remove('active');
         }
     });
+}
+
+function getPageSource() {
+    // This will need to be implemented via background script
+    // For now, we'll use a placeholder that gets the HTML
+    return document.documentElement.outerHTML;
+}
+
+function applyCodeChanges(oldNewPairs) {
+    try {
+        console.log('Starting to apply code changes...');
+        let pageSource = getPageSource();
+        let changesApplied = false;
+        
+        oldNewPairs.forEach(({ oldCode, newCode }, index) => {
+            // Escape special characters for regex
+            const escapedOldCode = oldCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(escapedOldCode, 'g');
+            
+            // Only apply change if old code is found
+            if (pageSource.includes(oldCode)) {
+                console.log(`Found match for change ${index + 1}:`, {
+                    old: oldCode.substring(0, 50) + '...',
+                    new: newCode.substring(0, 50) + '...'
+                });
+                pageSource = pageSource.replace(regex, newCode);
+                changesApplied = true;
+            } else {
+                console.warn(`Could not find exact match for change ${index + 1}:`, 
+                    oldCode.substring(0, 50) + '...');
+            }
+        });
+
+        if (changesApplied) {
+            console.log('Applying changes to page...');
+            
+            // Create a temporary container
+            const tempContainer = document.createElement('div');
+            tempContainer.innerHTML = pageSource;
+            
+            // Function to safely update an element
+            const updateElement = (oldElement, newElement) => {
+                // Skip if it's a script tag
+                if (oldElement.tagName.toLowerCase() === 'script') {
+                    return;
+                }
+
+                // Update styles
+                if (newElement.style) {
+                    Object.assign(oldElement.style, newElement.style);
+                }
+
+                // Update classes
+                if (newElement.className) {
+                    oldElement.className = newElement.className;
+                }
+
+                // Update other attributes except for event handlers
+                Array.from(newElement.attributes).forEach(attr => {
+                    if (!attr.name.startsWith('on')) {
+                        try {
+                            oldElement.setAttribute(attr.name, attr.value);
+                        } catch (e) {
+                            console.warn('Failed to set attribute:', attr.name, e);
+                        }
+                    }
+                });
+
+                // Only update content for non-form elements and if not focused
+                if (!['input', 'select', 'textarea'].includes(oldElement.tagName.toLowerCase()) &&
+                    !oldElement.contains(document.activeElement)) {
+                    oldElement.innerHTML = newElement.innerHTML;
+                }
+            };
+
+            // Update <head> content except scripts
+            const oldHead = document.head;
+            const newHead = tempContainer.querySelector('head');
+            if (newHead) {
+                Array.from(newHead.children).forEach(newChild => {
+                    if (newChild.tagName.toLowerCase() !== 'script') {
+                        const oldChild = oldHead.querySelector(`${newChild.tagName}[${newChild.attributes[0]?.name || ''}]`);
+                        if (oldChild) {
+                            updateElement(oldChild, newChild);
+                        }
+                    }
+                });
+            }
+
+            // Update <body> content
+            const oldBody = document.body;
+            const newBody = tempContainer.querySelector('body');
+            if (newBody) {
+                // Update body attributes
+                updateElement(oldBody, newBody);
+
+                // Update direct children of body
+                Array.from(newBody.children).forEach((newChild, index) => {
+                    const oldChild = oldBody.children[index];
+                    if (oldChild) {
+                        updateElement(oldChild, newChild);
+                    }
+                });
+            }
+
+            console.log('Changes applied successfully');
+        } else {
+            console.warn('No changes were applied - no matching code found');
+        }
+    } catch (error) {
+        console.error('Error applying code changes:', error);
+        throw new Error('Failed to apply code changes');
+    }
 }
 
 if (document.readyState === 'loading') {

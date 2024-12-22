@@ -2,21 +2,16 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
+  background: #0084ff;
   border-radius: 50%;
-  background-color: #0084ff;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
   cursor: pointer;
-  z-index: 9999;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s ease;
-}
-
-.floating-chat-icon:hover {
-  transform: scale(1.1);
 }
 
 .chat-icon {
@@ -27,78 +22,70 @@
 
 .chat-modal {
   position: fixed;
-  bottom: 90px;
+  bottom: 80px;
   right: 20px;
-  width: 350px;
-  height: 500px;
-  background-color: white;
+  width: 300px;
+  height: 400px;
+  background: white;
   border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-  z-index: 9998;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
   display: none;
-  overflow: hidden;
+  flex-direction: column;
+  z-index: 10000;
 }
 
 .chat-modal.active {
   display: flex;
-  flex-direction: column;
 }
 
 .modal-header {
-  padding: 15px;
-  background-color: #0084ff;
+  padding: 10px;
+  background: #0084ff;
   color: white;
-  font-weight: bold;
+  border-radius: 10px 10px 0 0;
 }
 
 .modal-content {
-  flex-grow: 1;
-  padding: 15px;
+  flex: 1;
+  padding: 10px;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 
 .chat-input-container {
-  padding: 15px;
+  padding: 10px;
   border-top: 1px solid #eee;
   display: flex;
-  gap: 10px;
 }
 
 .chat-input {
-  flex-grow: 1;
-  padding: 10px;
+  flex: 1;
+  padding: 8px;
   border: 1px solid #ddd;
-  border-radius: 20px;
-  outline: none;
+  border-radius: 4px;
+  margin-right: 8px;
 }
 
 .send-button {
-  padding: 10px 20px;
-  background-color: #0084ff;
+  padding: 8px 15px;
+  background: #0084ff;
   color: white;
   border: none;
-  border-radius: 20px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
 .message {
-  padding: 10px 15px;
-  border-radius: 15px;
-  max-width: 80%;
-  margin: 5px 0;
+  margin: 8px 0;
+  padding: 8px;
+  border-radius: 4px;
 }
 
 .user-message {
-  background-color: #0084ff;
-  color: white;
-  align-self: flex-end;
+  background: #e3f2fd;
+  margin-left: 20px;
 }
 
 .bot-message {
-  background-color: #f0f0f0;
-  color: black;
-  align-self: flex-start;
+  background: #f5f5f5;
+  margin-right: 20px;
 } 
