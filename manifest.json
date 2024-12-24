@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "AI Chat Assistant",
   "version": "1.0",
-  "description": "Gommala Morphix Vantan da... Ellame Odunga da....",
+  "description": "Gommala Morphix Vantan da... Ella Odunga da....",
   "permissions": [
     "activeTab",
     "scripting",
@@ -15,20 +15,22 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"],
+      "js": ["script.js"],
       "css": ["styles.css"]
     }
   ],
-  "web_accessible_resources": [{
-    "resources": ["worker.js"],
-    "matches": ["<all_urls>"]
-  }],
+  "web_accessible_resources": [
+    {
+      "resources": [],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-        "16": "icon.png",
-        "48": "icon.png",
-        "128": "icon.png"
-      }
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
   }
 }
