@@ -1,6 +1,6 @@
 document.getElementById("sendMessage").addEventListener("click", async function() {
   const userInput = document.getElementById("userInput").value;
-  if (userInput && userInput.trim() === "") return;
+  if (userInput==null && userInput.trim() === "") return;
 
   addMessage(userInput, "user");
   document.getElementById("userInput").value = "";
