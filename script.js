@@ -267,7 +267,7 @@ function getStyles() {
   return inlineStyles;
 }
 
-function applyInlineStyles(updatedStyles) {
+function applyStyles(updatedStyles) {
   updatedStyles.forEach((styleData) => {
     const selector = `${styleData.tag}${styleData.id ? `#${styleData.id}` : ''}${styleData.classes.length ? '.' + styleData.classes.join('.') : ''}`;
     const element = document.querySelector(selector);
