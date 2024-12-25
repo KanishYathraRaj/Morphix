@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siva D. Nithish - Portfolio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a192f;
+            --bg-secondary: #112240;
+            --text-primary: #ccd6f6;
+            --text-secondary: #8892b0;
+            --accent: #64ffda;
+            --accent-dark: #349780;
+            --nav-height: 100px;
+            --gradient: linear-gradient(120deg, #64ffda 0%, #349780 100%);
+            --gradient-1: #0a192f;
+            --gradient-2: #112240;
+            --gradient-3: #1d3557;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(-45deg, var(--gradient-1), var(--gradient-2), var(--gradient-3));
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 4.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            background: linear-gradient(120deg, var(--accent) 0%, var(--accent-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
+            animation: titleFadeIn 1s ease-out forwards;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var (--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* Sections */
+        .section {
+            padding: 100px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(100, 255, 218, 0.03),
+                rgba(52, 151, 128, 0.03)
+            );
+            pointer-events: none;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            color: var(--accent);
+        }
+
+        /* Cards */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(17, 34, 64, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border-color: var (--accent);
+        }
+
+        .card h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        /* Skills */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .skill-card {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .skill-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 20px rgba(100, 255, 218, 0.1);
+        }
+
+        .skill-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Add styles to ensure tags remain readable on hover */
+        .skill-card .tags .tag {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Projects */
+        .project-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1rem;
+            background: var(--bg-secondary);
+        }
+
+        .project-content {
+            padding: 2rem;
+        }
+
+        .project-title {
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        /* Contact */
+        .contact-section {
+            text-align: center;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .social-links a {
+            color: var (--text-primary);
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 3rem;
+            }
+
+            .section {
+                padding: 4rem 0;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        [data-aos] {
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        /* Enhanced Base Styles */
+        :root {
+            --bg-primary: #0a192f;
+            --bg-secondary: #112240;
+            --text-primary: #ccd6f6;
+            --text-secondary: #8892b0;
+            --accent: #64ffda;
+            --accent-dark: #349780;
+            --nav-height: 100px;
+            --gradient: linear-gradient(120deg, #64ffda 0%, #349780 100%);
+        }
+
+        /* Enhanced Card Animations */
+        @keyframes cardFloat {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes glowBorder {
+            0% { border-color: var(--accent-dark); }
+            50% { border-color: var(--accent); }
+            100% { border-color: var(--accent-dark); }
+        }
+
+        /* Enhanced Section Styles */
+        .section {
+            padding: 100px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(100, 255, 218, 0.03),
+                rgba(52, 151, 128, 0.03)
+            );
+            pointer-events: none;
+        }
+
+        /* Enhanced Card Styles */
+        .card {
+            background: rgba(17, 34, 64, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border-color: var(--accent);
+        }
+
+        /* Enhanced Experience Cards */
+        .experience-card {
+            animation: cardFloat 6s ease-in-out infinite;
+        }
+
+        .experience-header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .experience-company {
+            font-size: 1.1em;
+            color: var(--accent);
+            position: relative;
+            display: inline-block;
+        }
+
+        .experience-company::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient);
+            transition: width 0.3s ease;
+        }
+
+        .experience-card:hover .experience-company::after {
+            width: 100%;
+        }
+
+        /* Enhanced Certification Cards */
+        .certification-card {
+            position: relative;
+            z-index: 1;
+        }
+
+        .certification-card::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120%;
+            height: 120%;
+            background: var(--gradient);
+            z-index: -1;
+            transform: translate(-50%, -50%) scale(0.8);
+            opacity: 0;
+            transition: all 0.4s ease;
+            border-radius: 20px;
+        }
+
+        .certification-card:hover::after {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 0.1;
+        }
+
+        /* Interactive Elements */
+        .tag {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 15px;
+            background: rgba(100, 255, 218, 0.1);
+            color: var(--accent);
+            font-size: 0.9em;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            background: var(--accent);
+            color: var(--bg-primary);
+            transform: translateY(-2px);
+        }
+
+        /* Enhanced Grid Layouts */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px;
+        }
+
+        /* Scroll Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        [data-aos="fade-up"] {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        [data-aos="fade-up"].aos-animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Enhanced Typography */
+        h3 {
+            font-size: 1.5em;
+            font-weight: 600;
+            background: var (--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+
+        /* Animated Gradient Background */
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Enhanced Card Styles */
+        .achievement-card, .certification-card {
+            backdrop-filter: blur(10px);
+            background: rgba(17, 34, 64, 0.7);
+            border: 1px solid rgba(100, 255, 218, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        .achievement-card:hover, .certification-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .achievement-venue, .certification-provider {
+            color: var(--accent);
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* Enhanced Grid Layout */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 15px;
+            }
+        }
+
+        /* Add this animation for a subtle entrance effect */
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Chat button styling */
+        #chat-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            padding: 0.8rem 1rem;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 9999;
+        }
+
+        #chat-button:hover {
+            background-color: var(--accent-dark);
+        }
+
+        /* Modal styling */
+        #chat-modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background: var(--bg-secondary);
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 10000;
+            overflow: hidden;
+        }
+
+        #chat-header {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        #chat-body {
+            padding: 1rem;
+            height: calc(100% - 80px);
+            overflow-y: auto;
+            color: var(--text-primary);
+        }
+
+        #chat-close {
+            position: absolute;
+            top: 0.3rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            color: var(--bg-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        /* Enhanced Chat Styles */
+        #chat-modal {
+            width: 350px;
+            height: 500px;
+            background: rgba(17, 34, 64, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        #chat-body {
+            display: flex;
+            flex-direction: column;
+            height: calc(100% - 50px); /* Reduced from -100px */
+            position: relative; /* Added */
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            padding-bottom: 60px; /* Added space for input container */
+        }
+
+        .chat-input-container {
+            position: absolute; /* Changed from relative */
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: rgba(17, 34, 64, 0.95);
+            border-top: 1px solid rgba(100, 255, 218, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        #chat-input {
+            flex-grow: 1;
+            padding: 0.8rem;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            border-radius: 20px;
+            background: rgba(17, 34, 64, 0.7);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        #chat-input:focus {
+            border-color: var(--accent);
+        }
+
+        #chat-send {
+            padding: 0.8rem 1.2rem;
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 50px;
+        }
+
+        #chat-send:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.8rem 1rem;
+            border-radius: 15px;
+            max-width: 80%;
+            animation: messageSlide 0.3s ease-out;
+        }
+
+        .message.user {
+            background: rgba(100, 255, 218, 0.1);
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.bot {
+            background: rgba(17, 34, 64, 0.8);
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #chat-input:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        #chat-send:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">SD</a>
+            <div class="nav-links">
+                <a href="#about">About</a>
+                <a href="#skills">Skills</a>
+                <a href="#projects">Projects</a>
+                <a href="#experience">Experience</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content" data-aos="fade-up">
+                <h1 class="hero-title">Siva D. Nithish</h1>
+                <p class="hero-subtitle">AI/ML Engineer & Full Stack Developer</p>
+                <div class="social-links">
+                    <a href="https://linkedin.com/in/sivanithishkumar" target="_blank">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="https://github.com/sivanithishkumar" target="_blank">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="mailto:sivanithishkumar12@gmail.com">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <a href="tel:9003519497">
+                        <i class="fas fa-phone"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Education Section -->
+    <section id="education" class="section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Education</h2>
+            <div class="grid-container">
+                <div class="card education-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="education-header">
+                        <h3>B.E CSE (AI-ML)</h3>
+                        <span class="education-institute">Sri Eshwar College of Engineering</span>
+                        <div class="tags">
+                            <span class="tag">AI</span>
+                            <span class="tag">ML</span>
+                        </div>
+                    </div>
+                    <div class="education-body">
+                        <div class="education-year">2022 - 2026</div>
+                    </div>
+                </div>
+
+                <div class="card education-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="education-header">
+                        <h3>HSC</h3>
+                        <span class="education-institute">SRT Universal Matric Higher Secondary School</span>
+                    </div>
+                    <div class="education-body">
+                        <div class="education-year">2020 - 2022</div>
+                    </div>
+                </div>
+
+                <div class="card education-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="education-header">
+                        <h3>SSLC</h3>
+                        <span class="education-institute">Vidhya Vikashini Matric Higher Secondary School</span>
+                    </div>
+                    <div class="education-body">
+                        <div class="education-year">2019 - 2020</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section id="experience" class="section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Internships</h2>
+            <div class="grid-container">
+                <div class="card experience-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="experience-header">
+                        <h3>Data Science Intern</h3>
+                        <span class="experience-company">Adya.AI</span>
+                        <div class="tags">
+                            <span class="tag">LLMs</span>
+                            <span class="tag">AI Development</span>
+                        </div>
+                    </div>
+                    <div class="experience-body">
+                        <p>Gained hands-on experience working with large language models (LLMs) while finetuning and deploying them in real-time applications, enhancing AI development and implementation skills.</p>
+                        <div class="experience-year">2024</div>
+                    </div>
+                </div>
+
+                <div class="card experience-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="experience-header">
+                        <h3>ML Intern</h3>
+                        <span class="experience-company">MokSa.AI</span>
+                        <div class="tags">
+                            <span class="tag">Video Annotations</span>
+                            <span class="tag">Model Development</span>
+                        </div>
+                    </div>
+                    <div class="experience-body">
+                        <p>Specialized in video annotations and model development to detect abnormal behavior within retail stores, enhancing security measures and contributing to advanced surveillance systems.</p>
+                        <div class="experience-year">2023</div>
+                    </div>
+                </div>
+
+                <div class="card experience-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="experience-header">
+                        <h3>MERN Stack</h3>
+                        <span class="experience-company">RVTechlearn</span>
+                        <div class="tags">
+                            <span class="tag">MERN</span>
+                            <span class="tag">Web Development</span>
+                        </div>
+                    </div>
+                    <div class="experience-body">
+                        <p>Completed MERN Stack expertise to develop secure APIs and implement database connections to build complete end-to-end dynamic web applications.</p>
+                        <div class="experience-year">2024</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Projects</h2>
+            <div class="grid-container">
+                <div class="card project-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="project-header">
+                        <h3>SenseAI - AI Enhanced Learning Companion</h3>
+                        <div class="tags">
+                            <span class="tag">HuggingFace</span>
+                            <span class="tag">OpenCV</span>
+                            <span class="tag">PyTorch</span>
+                            <span class="tag">Flask</span>
+                            <span class="tag">Flutter</span>
+                            <span class="tag">PEFT</span>
+                        </div>
+                    </div>
+                    <div class="project-body">
+                        <p>Created an offline learning tool offering summarization, translation, AI-generated questions, and image generation. Fine-tuned LLMs for more accurate teaching and efficient doubt resolution.</p>
+                    </div>
+                </div>
+
+                <div class="card project-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="project-header">
+                        <h3>Surveillance using Video Vision Transformers</h3>
+                        <div class="tags">
+                            <span class="tag">PyTorch</span>
+                            <span class="tag">ViViT</span>
+                            <span class="tag">HuggingFace</span>
+                            <span class="tag">OpenCV</span>
+                        </div>
+                    </div>
+                    <div class="project-body">
+                        <p>Developed a surveillance system using Video Vision Transformers (ViViTs) to detect abnormal activities like violence and theft, enabling real-time threat detection.</p>
+                    </div>
+                </div>
+
+                <div class="card project-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="project-header">
+                        <h3>Other Projects</h3>
+                        <div class="tags">
+                            <span class="tag">DeepFake Detector</span>
+                            <span class="tag">Demand Forecasting</span>
+                            <span class="tag">Video Annotation Tool</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Achievements Section -->
+    <section id="achievements" class="section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Achievements</h2>
+            <div class="grid-container">
+                <div class="card achievement-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="achievement-header">
+                        <h3>Jithack '24</h3>
+                        <span class="achievement-venue">Bangalore</span>
+                    </div>
+                    <div class="achievement-body">
+                        <p>Winner - Cash Prize ₹50,000</p>
+                    </div>
+                </div>
+
+                <div class="card achievement-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="achievement-header">
+                        <h3>Hackerupt '24</h3>
+                        <span class="achievement-venue">IIT Madras Research Park</span>
+                    </div>
+                    <div class="achievement-body">
+                        <p>Winner - Cash Prize ₹15,000</p>
+                    </div>
+                </div>
+
+                <div class="card achievement-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="achievement-header">
+                        <h3>Dhruva '24</h3>
+                        <span class="achievement-venue">Karpagam College of Engineering</span>
+                    </div>
+                    <div class="achievement-body">
+                        <p>Winner</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Skills</h2>
+            <div class="grid-container">
+                <div class="card skill-card" data-aos="fade-up" data-aos-delay="100">
+                    <h3>Languages</h3>
+                    <div class="tags">
+                        <span class="tag">C++</span>
+                        <span class="tag">Python</span>
+                        <span class="tag">HTML</span>
+                        <span class="tag">CSS</span>
+                        <span class="tag">JavaScript</span>
+                        <span class="tag">Java</span>
+                    </div>
+                </div>
+
+                <div class="card skill-card" data-aos="fade-up" data-aos-delay="200">
+                    <h3>Frameworks</h3>
+                    <div class="tags">
+                        <span class="tag">Django</span>
+                        <span class="tag">React</span>
+                        <span class="tag">Express</span>
+                        <span class="tag">Flask</span>
+                        <span class="tag">Langchain</span>
+                        <span class="tag">Node</span>
+                        <span class="tag">React Native</span>
+                    </div>
+                </div>
+
+                <div class="card skill-card" data-aos="fade-up" data-aos-delay="300">
+                    <h3>Tools & Technologies</h3>
+                    <div class="tags">
+                        <span class="tag">VScode</span>
+                        <span class="tag">PyCharm</span>
+                        <span class="tag">GitHub</span>
+                        <span class="tag">Colab</span>
+                        <span class="tag">Neural Networks</span>
+                        <span class="tag">Machine Learning</span>
+                        <span class="tag">Deep Learning</span>
+                        <span class="tag">NLP</span>
+                        <span class="tag">CV</span>
+                        <span class="tag">Generative AI</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Certifications Section -->
+    <section id="certifications" class="section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Certifications</h2>
+            <div class="grid-container">
+                <div class="card certification-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="certification-header">
+                        <h3>Data Structures and Algorithms</h3>
+                        <span class="certification-provider">Udemy</span>
+                    </div>
+                    <div class="certification-body">
+                        <p>Mastering Data Structure and Algorithms Using C and C++</p>
+                    </div>
+                </div>
+
+                <div class="card certification-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="certification-header">
+                        <h3>SQL Certification</h3>
+                        <span class="certification-provider">Hackerrank</span>
+                    </div>
+                    <div class="certification-body">
+                        <p>Advanced SQL and Database Management</p>
+                    </div>
+                </div>
+
+                <div class="card certification-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="certification-header">
+                        <h3>Generative AI</h3>
+                        <span class="certification-provider">Nvidia</span>
+                    </div>
+                    <div class="certification-body">
+                        <p>Advanced Generative AI Concepts and Implementation</p>
+                    </div>
+                </div>
+
+                <div class="card certification-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="certification-header">
+                        <h3>RAG Agents with LLMs</h3>
+                        <span class="certification-provider">Nvidia</span>
+                    </div>
+                    <div class="certification-body">
+                        <p>Building RAG Agents with Large Language Models</p>
+                    </div>
+                </div>
+
+                <div class="card certification-card" data-aos="fade-up" data-aos-delay="500">
+                    <div class="certification-header">
+                        <h3>Reinforcement Learning</h3>
+                        <span class="certification-provider">Deeplearning.ai</span>
+                    </div>
+                    <div class="certification-body">
+                        <p>Reinforcement Learning with Human Feedback</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Popup -->
+    <button id="chat-button">Chat</button>
+    <div id="chat-modal">
+        <div id="chat-header">
+            <i class="fas fa-robot"></i> Code Assistant
+            <button id="chat-close">&times;</button>
+        </div>
+        <div id="chat-body">
+            <div class="chat-messages"></div>
+            <div class="chat-input-container">
+                <input
+                    type="text"
+                    id="chat-input"
+                    placeholder="Describe the code changes you want..."
+                />
+                <button id="chat-send">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize global variables
+        const API_KEY = 'AIzaSyDtRxzdQ1RLZNH2KSMtsNWP8ZKyIrtDBUo';
+        let pageCode = document.documentElement.outerHTML;
+        let chatHistory = [];
+        
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        function addMessage(text, sender) {
+            const message = document.createElement('div');
+            message.classList.add('message', sender);
+            message.textContent = text;
+            const chatMessages = document.querySelector('.chat-messages');
+            chatMessages.appendChild(message);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Store message in history
+            chatHistory.push({ text, sender });
+        }
+
+        // Initialize event listeners
+        function initializeEventListeners() {
+            const chatInput = document.getElementById('chat-input');
+            const chatSend = document.getElementById('chat-send');
+            const chatButton = document.getElementById('chat-button');
+            const chatClose = document.getElementById('chat-close');
+            const chatModal = document.getElementById('chat-modal');
+
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleUserInput();
+                }
+            });
+
+            chatSend.addEventListener('click', handleUserInput);
+            
+            chatClose.addEventListener('click', () => {
+                chatModal.style.display = 'none';
+            });
+
+            chatButton.addEventListener('click', () => {
+                pageCode = document.documentElement.outerHTML;
+                chatModal.style.display = chatModal.style.display === 'none' ? 'block' : 'none';
+            });
+
+            // Smooth scrolling
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        }
+
+        async function findAndReplaceCode(fullCode, oldCode, newCode) {
+            try {
+                // Special handling for dynamic content
+                if (oldCode.includes("message bot") || oldCode.includes("message user")) {
+                    // Skip replacing dynamic chat messages
+                    return fullCode;
+                }
+
+                // Clean and escape the old code for regex
+                const escapedOldCode = oldCode
+                    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                    .replace(/\s+/g, '\\s+');
+                
+                const regex = new RegExp(escapedOldCode, 'g');
+                
+                // Test if old code exists
+                if (!regex.test(fullCode)) {
+                    console.error("Couldn't find code segment:", oldCode);
+                    return null;
+                }
+
+                // Replace the code
+                return fullCode.replace(regex, newCode);
+            } catch (error) {
+                console.error("Error in findAndReplaceCode:", error);
+                return null;
+            }
+        }
+
+        async function applyCodeChanges(changes) {
+            try {
+                let updatedCode = pageCode; // Use the current stored code
+                let success = true;
+                
+                // Filter out changes targeting dynamic content
+                const staticChanges = changes.filter(change => 
+                    !change.old.includes("message bot") && 
+                    !change.old.includes("message user")
+                );
+                
+                // Apply each change pair
+                for (const change of staticChanges) {
+                    const result = await findAndReplaceCode(updatedCode, change.old, change.new);
+                    if (!result) {
+                        console.error("Failed to apply change:", change);
+                        success = false;
+                        break;
+                    }
+                    updatedCode = result;
+                }
+
+                if (!success) {
+                    return false;
+                }
+
+                // Save chat messages before updating DOM
+                const chatModal = document.getElementById('chat-modal');
+                const chatMessages = document.querySelector('.chat-messages');
+                const wasVisible = chatModal.style.display === 'block';
+                const messages = chatMessages.innerHTML;
+
+                // Update the document
+                const parser = new DOMParser();
+                const newDoc = parser.parseFromString(updatedCode, 'text/html');
+                document.documentElement.innerHTML = newDoc.documentElement.innerHTML;
+
+                // Update stored page code with new version
+                pageCode = updatedCode;
+
+                // Restore chat state
+                document.getElementById('chat-modal').style.display = wasVisible ? 'block' : 'none';
+                document.querySelector('.chat-messages').innerHTML = messages;
+
+                // Reinitialize functionality
+                initializeEventListeners();
+                AOS.init({
+                    duration: 1000,
+                    once: true,
+                    offset: 100
+                });
+
+                return true;
+            } catch (error) {
+                console.error("Error applying changes:", error);
+                return false;
+            }
+        }
+
+        function handleUserInput() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (text) {
+                addMessage(text, 'user');
+                input.value = '';
+                fetchGeminiResponse(text);
+            }
+        }
+
+        async function fetchGeminiResponse(userInput) {
+            // Disable input and show loading state
+            const input = document.getElementById('chat-input');
+            const sendButton = document.getElementById('chat-send');
+            const loadingSpinner = document.createElement('div');
+            loadingSpinner.className = 'loading-spinner';
+            
+            input.disabled = true;
+            sendButton.disabled = true;
+            sendButton.innerHTML = '';
+            sendButton.appendChild(loadingSpinner);
+
+            try {
+                const prompt = `
+                You are a code assistant. Your task is to help modify the website code based on the user's request.
+                Current webpage code:
+                ${pageCode}
+
+                User request: ${userInput}
+
+                Please provide:
+                1. A clear explanation of the changes
+                2. A list of code changes in the following JSON format:
+                {
+                    "explanation": "explanation text",
+                    "changes": [
+                        {
+                            "old": "code to be replaced",
+                            "new": "replacement code"
+                        }
+                    ]
+                }
+                Only include the actual code segments that need to be changed.
+                `;
+
+                const response = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${API_KEY}`,
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contents: [{ role: "user", parts: [{ text: prompt }] }]
+                        })
+                    }
+                );
+
+                const result = await response.json();
+                const botResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text || "I apologize, I couldn't process that.";
+                
+                try {
+                    // Extract JSON from response
+                    const jsonMatch = botResponse.match(/({[\s\S]*})/);
+                    if (!jsonMatch) {
+                        throw new Error("No valid JSON found in response");
+                    }
+
+                    const changes = JSON.parse(jsonMatch[0]);
+                    
+                    // Add the explanation as a message
+                    addMessage(changes.explanation, 'bot');
+
+                    if (changes.changes && changes.changes.length > 0) {
+                        addMessage("Applying changes...", 'bot');
+                        const success = await applyCodeChanges(changes.changes);
+                        
+                        if (success) {
+                            addMessage("Changes have been applied successfully!", 'bot');
+                        } else {
+                            addMessage("Sorry, I couldn't apply the changes. Please try a different request.", 'bot');
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error parsing response:", error);
+                    addMessage("Sorry, I couldn't understand the response format. Please try again.", 'bot');
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                addMessage("Sorry, I encountered an error. Please try again.", 'bot');
+            } finally {
+                // Re-enable input and restore button
+                input.disabled = false;
+                sendButton.disabled = false;
+                sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeEventListeners();
+            addMessage("Hi! I'm your code assistant. Describe the changes you want to make to the website, and I'll help implement them.", 'bot');
+        });
+    </script>
+</body>
+</html>

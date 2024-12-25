@@ -31,7 +31,6 @@ async function generateCode(pageSource, prompt) {
       try {
           console.log(`Attempt ${retries + 1} of ${MAX_RETRIES}`);
 
-          // Exponential backoff for retries
           if (retries > 0) {
               const backoffDelay = RATE_LIMIT_DELAY * Math.pow(2, retries);
               console.log(`Retry backoff: waiting ${backoffDelay}ms`);
@@ -126,25 +125,70 @@ async function generateCode(pageSource, prompt) {
 
 async function applyGeneratedCode(generatedCode) {
   return new Promise((resolve, reject) => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.scripting.executeScript(
-        {
-          target: { tabId: tabs[0].id },
-          func: (code) => {
-            // Replace the body of the page with the new code
-            document.body.innerHTML = code; // Replaces the entire body of the page with generated HTML code
+    try {
+      // Extract code changes between markers
+      const changesMatch = generatedCode.match(/###CODE_CHANGES_START###([\s\S]*?)###CODE_CHANGES_END###/);
+      if (!changesMatch) {
+        throw new Error("No valid code changes found");
+      }
+
+      const changesSection = changesMatch[1].trim();
+      const changes = changesSection
+        .split('OLD:')
+        .filter(Boolean)
+        .map(change => {
+          const [oldCode, ...newParts] = change.split('NEW:');
+          return {
+            oldCode: oldCode.trim(),
+            newCode: newParts.join('NEW:').trim()
+          };
+        });
+
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: tabs[0].id },
+            func: (changes) => {
+              changes.forEach(({ oldCode, newCode }) => {
+                const escapedOldCode = oldCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(escapedOldCode, 'g');
+                
+                // Find elements containing the old code
+                const walker = document.createTreeWalker(
+                  document.body,
+                  NodeFilter.SHOW_TEXT,
+                  null,
+                  false
+                );
+
+                const nodesToUpdate = [];
+                let node;
+                while (node = walker.nextNode()) {
+                  if (node.textContent.includes(oldCode)) {
+                    nodesToUpdate.push(node);
+                  }
+                }
+
+                // Apply changes only to matching elements
+                nodesToUpdate.forEach(node => {
+                  node.textContent = node.textContent.replace(regex, newCode);
+                });
+              });
+            },
+            args: [changes]
           },
-          args: [generatedCode]  // Pass the generated code as argument to the function
-        },
-        (injectionResults) => {
-          if (injectionResults) {
-            resolve();
-          } else {
-            reject("Failed to apply generated code");
+          (injectionResults) => {
+            if (injectionResults) {
+              resolve();
+            } else {
+              reject("Failed to apply generated code");
+            }
           }
-        }
-      );
-    });
+        );
+      });
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
