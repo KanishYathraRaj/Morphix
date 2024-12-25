@@ -1,6 +1,6 @@
 document.getElementById("sendMessage").addEventListener("click", async function() {
   const userInput = document.getElementById("userInput").value;
-  if (userInput.trim() === "") return;
+  if (userInput && userInput.trim() === "") return;
 
   addMessage(userInput, "user");
   document.getElementById("userInput").value = "";
@@ -221,3 +221,4 @@ function addMessage(message, sender) {
   messageContainer.appendChild(messageBubble);
   document.getElementById("chat-messages").appendChild(messageContainer);
 }
+
