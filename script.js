@@ -6,10 +6,10 @@ document.getElementById("sendMessage").addEventListener("click", async function(
   document.getElementById("userInput").value = "";
 
   try {
-    getAllStyles()
+    activeTab(getStyles)
     .then((styles) => {
       console.log(styles);
-      // You can process or display these styles as required
+
     })
     .catch((error) => {
       console.error("Error:", error);
@@ -229,13 +229,13 @@ function addMessage(message, sender) {
   document.getElementById("chat-messages").appendChild(messageContainer);
 }
 
-function getAllStyles() {
+function activeTab(functionName) {
   return new Promise((resolve, reject) => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       chrome.scripting.executeScript(
         {
           target: { tabId: tabs[0].id },
-          func: getStyles
+          func: functionName
         },
         (injectionResults) => {
           if (injectionResults && injectionResults[0] && injectionResults[0].result) {
