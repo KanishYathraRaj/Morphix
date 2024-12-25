@@ -1,4 +1,3 @@
-// Add keypress handler for the input
 document.getElementById("userInput").addEventListener("keypress", function(event) {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
@@ -15,52 +14,26 @@ document.getElementById("sendMessage").addEventListener("click", async function(
   addMessage("Processing...", "bot");
 
   try {
-    // First get the page source
+    const dummy = await activeTab(setUniqueId);
+    
+    console.log("Getting Page Source.......................");
     const pageSource = await getPageSource();
-    
-    // Then get the styles and add IDs
-    const styles = await activeTab(() => {
-      function processPage() {
-        // Set unique IDs
-        const allElements = document.querySelectorAll('*');
-        let uniqueIdCounter = 0;
-        allElements.forEach((element) => {
-          if (!element.id) {
-            element.id = `unique-id-${uniqueIdCounter++}`;
-          }
-        });
+    console.log("Page Source...............................", pageSource);
 
-        // Get styles
-        const styles = [];
-        allElements.forEach((element) => {
-          if (element.style.cssText) {
-            styles.push({
-              tag: element.tagName.toLowerCase(),
-              id: element.id || null,
-              classes: Array.from(element.classList),
-              styles: element.style.cssText
-            });
-          }
-        });
-        return styles;
-      }
-      return processPage();
-    });
-
-    // Generate code changes using LLM
+    console.log("Generating Code...........................");
     const generatedCode = await generateCode(pageSource, userInput.trim());
+    console.log("Generated Code............................", generatedCode);
+
     
-    // Remove the "Processing..." message
-    document.getElementById("chat-messages").lastElementChild.remove();
-    
-    // Apply the generated changes
+    console.log("Applying Generated Code...................");
     await applyGeneratedCode(generatedCode);
+    console.log("Generated Code Applied....................");
     
-    // Show the changes in the chat
+    document.getElementById("chat-messages").lastElementChild.remove();
+
     addMessage("Changes applied successfully!", "bot");
     
   } catch (error) {
-    // Remove the "Processing..." message
     document.getElementById("chat-messages").lastElementChild.remove();
     addMessage(`Error: ${error.message}`, "bot");
   }
@@ -135,22 +108,17 @@ async function generateCode(pageSource, prompt) {
               2. Provide COMPLETE code changes that can be directly implemented
               3. Ensure the changes are syntactically correct and maintain functionality
               4. Include ALL necessary code including imports and dependencies
+              3. Each element will be given a unique identifier
               5. Respond ONLY in this exact format:
 
               ###CODE_CHANGES_START###
               DESCRIPTION: <brief description of changes>
               
-              FILE: <filename>
-              OLD:
-              <complete section of old code to be replaced>
-              NEW:
-              <complete section of new code that will replace it>
+              UNIQUE_ID: <unique identifier for the file(use html element id)>
+              MODIFICATION: "<complete modified inlineStyle CSS of that unique element>":
               
-              [Repeat FILE/OLD/NEW sections for each file if multiple files need changes]
+              [Repeat UNIQUE_ID/MODIFICATION sections for each modified element file]
               ###CODE_CHANGES_END###
-
-              Please ALSO be sure to provide the entire old code snippet EXACTLY in the OLD section
-              so that it can be matched and replaced easily.
 
               Current webpage source:
               ${pageSource}
@@ -206,55 +174,46 @@ async function applyGeneratedCode(generatedCode) {
       }
 
       const changesSection = changesMatch[1].trim();
-      const changes = changesSection
-        .split('OLD:')
-        .filter(Boolean)
-        .map(change => {
-          const [oldCode, ...newParts] = change.split('NEW:');
-          return {
-            oldCode: oldCode.trim(),
-            newCode: newParts.join('NEW:').trim()
-          };
-        });
 
+      // Parse the changes into an array of objects
+      const changes = [...changesSection.matchAll(/UNIQUE_ID:\s*(\S+)[\s\S]*?MODIFICATION:\s*"([\s\S]*?)"/g)].map(
+        (match) => ({
+          uniqueId: match[1].trim(),
+          modification: match[2].trim(),
+        })
+      );
+
+      if (changes.length === 0) {
+        throw new Error("No valid modifications found in the changes section");
+      }
+
+      // Apply changes to the active tab
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         chrome.scripting.executeScript(
           {
             target: { tabId: tabs[0].id },
             func: (changes) => {
-              changes.forEach(({ oldCode, newCode }) => {
-                const escapedOldCode = oldCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const regex = new RegExp(escapedOldCode, 'g');
-                
-                // Find elements containing the old code
-                const walker = document.createTreeWalker(
-                  document.body,
-                  NodeFilter.SHOW_TEXT,
-                  null,
-                  false
-                );
-
-                const nodesToUpdate = [];
-                let node;
-                while (node = walker.nextNode()) {
-                  if (node.textContent.includes(oldCode)) {
-                    nodesToUpdate.push(node);
-                  }
+              changes.forEach(({ uniqueId, modification }) => {
+                const element = document.getElementById(uniqueId);
+                if (element) {
+                  // Apply the modification as inline styles
+                  const stylePairs = modification.split(';').filter(Boolean);
+                  stylePairs.forEach((stylePair) => {
+                    const [property, value] = stylePair.split(':').map((s) => s.trim());
+                    if (property && value) {
+                      element.style.setProperty(property, value);
+                    }
+                  });
                 }
-
-                // Apply changes only to matching elements
-                nodesToUpdate.forEach(node => {
-                  node.textContent = node.textContent.replace(regex, newCode);
-                });
               });
             },
-            args: [changes]
+            args: [changes],
           },
           (injectionResults) => {
-            if (injectionResults) {
-              resolve();
+            if (chrome.runtime.lastError) {
+              reject(chrome.runtime.lastError.message);
             } else {
-              reject("Failed to apply generated code");
+              resolve("Styles applied successfully");
             }
           }
         );
@@ -264,6 +223,7 @@ async function applyGeneratedCode(generatedCode) {
     }
   });
 }
+
 
 function getPageSource() {
   return new Promise((resolve, reject) => {
@@ -282,6 +242,16 @@ function getPageSource() {
         }
       );
     });
+  });
+}
+
+function setUniqueId(){
+  const allElements = document.querySelectorAll('*');
+  let uniqueIdCounter = 0;
+  allElements.forEach((element) => {
+    if (!element.id) {
+      element.id = `uid-${uniqueIdCounter++}`;
+    }
   });
 }
 
