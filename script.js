@@ -1,30 +1,96 @@
+// Add keypress handler for the input
+document.getElementById("userInput").addEventListener("keypress", function(event) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    document.getElementById("sendMessage").click();
+  }
+});
+
 document.getElementById("sendMessage").addEventListener("click", async function() {
   const userInput = document.getElementById("userInput").value;
-  if (userInput==null && userInput.trim() === "") return;
+  if (userInput==null || userInput.trim() === "") return;
 
   addMessage(userInput, "user");
   document.getElementById("userInput").value = "";
+  addMessage("Processing...", "bot");
 
   try {
-    getAllStyles()
-    .then((styles) => {
-      console.log(styles);
-      // You can process or display these styles as required
-    })
-    .catch((error) => {
-      console.error("Error:", error);
+    // First get the page source
+    const pageSource = await getPageSource();
+    
+    // Then get the styles and add IDs
+    const styles = await activeTab(() => {
+      function processPage() {
+        // Set unique IDs
+        const allElements = document.querySelectorAll('*');
+        let uniqueIdCounter = 0;
+        allElements.forEach((element) => {
+          if (!element.id) {
+            element.id = `unique-id-${uniqueIdCounter++}`;
+          }
+        });
+
+        // Get styles
+        const styles = [];
+        allElements.forEach((element) => {
+          if (element.style.cssText) {
+            styles.push({
+              tag: element.tagName.toLowerCase(),
+              id: element.id || null,
+              classes: Array.from(element.classList),
+              styles: element.style.cssText
+            });
+          }
+        });
+        return styles;
+      }
+      return processPage();
     });
 
-    // const pageSource = await getPageSource();
-    // const generatedCode = await generateCode(pageSource, userInput.trim());
-    // await applyGeneratedCode(generatedCode);
-    // addMessage(pageSource, "bot");
-    // addMessage(generatedCode, "bot");
+    // Generate code changes using LLM
+    const generatedCode = await generateCode(pageSource, userInput.trim());
+    
+    // Remove the "Processing..." message
+    document.getElementById("chat-messages").lastElementChild.remove();
+    
+    // Apply the generated changes
+    await applyGeneratedCode(generatedCode);
+    
+    // Show the changes in the chat
+    addMessage("Changes applied successfully!", "bot");
+    
   } catch (error) {
-    addMessage(`Error: ${error}`, "bot");
+    // Remove the "Processing..." message
+    document.getElementById("chat-messages").lastElementChild.remove();
+    addMessage(`Error: ${error.message}`, "bot");
   }
-
 });
+
+function activeTab(injectedFunction) {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs[0]?.id) {
+        reject(new Error("No active tab found"));
+        return;
+      }
+      
+      chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id },
+        func: injectedFunction,
+      })
+      .then(results => {
+        if (results && results[0] && results[0].result !== undefined) {
+          resolve(results[0].result);
+        } else {
+          reject(new Error("No results from tab execution"));
+        }
+      })
+      .catch(error => {
+        reject(new Error(`Tab execution failed: ${error.message}`));
+      });
+    });
+  });
+}
 
 async function generateCode(pageSource, prompt) {
   const API_KEY = 'AIzaSyDtRxzdQ1RLZNH2KSMtsNWP8ZKyIrtDBUo';
@@ -227,53 +293,5 @@ function addMessage(message, sender) {
   messageBubble.textContent = message;
   messageContainer.appendChild(messageBubble);
   document.getElementById("chat-messages").appendChild(messageContainer);
-}
-
-function getAllStyles() {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.scripting.executeScript(
-        {
-          target: { tabId: tabs[0].id },
-          func: getStyles
-        },
-        (injectionResults) => {
-          if (injectionResults && injectionResults[0] && injectionResults[0].result) {
-            resolve(injectionResults[0].result); // Return the styles
-          } else {
-            reject("Failed to get styles");
-          }
-        }
-      );
-    });
-  });
-}
-
-function getStyles() {
-  const allElements = document.querySelectorAll('*');
-  const inlineStyles = [];
-
-  allElements.forEach((element) => {
-    if (element.style.cssText) {
-      inlineStyles.push({
-        tag: element.tagName.toLowerCase(),
-        id: element.id || null,
-        classes: [...element.classList],
-        styles: element.style.cssText
-      });
-    }
-  });
-
-  return inlineStyles;
-}
-
-function applyStyles(updatedStyles) {
-  updatedStyles.forEach((styleData) => {
-    const selector = `${styleData.tag}${styleData.id ? `#${styleData.id}` : ''}${styleData.classes.length ? '.' + styleData.classes.join('.') : ''}`;
-    const element = document.querySelector(selector);
-    if (element) {
-      element.style.cssText = styleData.styles;
-    }
-  });
 }
 
