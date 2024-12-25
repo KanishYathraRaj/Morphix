@@ -6,13 +6,20 @@ document.getElementById("sendMessage").addEventListener("click", async function(
   document.getElementById("userInput").value = "";
 
   try {
-    const pageSource = await getPageSource();
-    const generatedCode = await generateCode(pageSource, userInput.trim());
+    getAllStyles()
+    .then((styles) => {
+      console.log(styles);
+      // You can process or display these styles as required
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
 
-    await applyGeneratedCode(generatedCode);
-
-    addMessage(pageSource, "bot");
-    addMessage(generatedCode, "bot");
+    // const pageSource = await getPageSource();
+    // const generatedCode = await generateCode(pageSource, userInput.trim());
+    // await applyGeneratedCode(generatedCode);
+    // addMessage(pageSource, "bot");
+    // addMessage(generatedCode, "bot");
   } catch (error) {
     addMessage(`Error: ${error}`, "bot");
   }
@@ -220,5 +227,53 @@ function addMessage(message, sender) {
   messageBubble.textContent = message;
   messageContainer.appendChild(messageBubble);
   document.getElementById("chat-messages").appendChild(messageContainer);
+}
+
+function getAllStyles() {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.scripting.executeScript(
+        {
+          target: { tabId: tabs[0].id },
+          func: getStyles
+        },
+        (injectionResults) => {
+          if (injectionResults && injectionResults[0] && injectionResults[0].result) {
+            resolve(injectionResults[0].result); // Return the styles
+          } else {
+            reject("Failed to get styles");
+          }
+        }
+      );
+    });
+  });
+}
+
+function getStyles() {
+  const allElements = document.querySelectorAll('*');
+  const inlineStyles = [];
+
+  allElements.forEach((element) => {
+    if (element.style.cssText) {
+      inlineStyles.push({
+        tag: element.tagName.toLowerCase(),
+        id: element.id || null,
+        classes: [...element.classList],
+        styles: element.style.cssText
+      });
+    }
+  });
+
+  return inlineStyles;
+}
+
+function applyInlineStyles(updatedStyles) {
+  updatedStyles.forEach((styleData) => {
+    const selector = `${styleData.tag}${styleData.id ? `#${styleData.id}` : ''}${styleData.classes.length ? '.' + styleData.classes.join('.') : ''}`;
+    const element = document.querySelector(selector);
+    if (element) {
+      element.style.cssText = styleData.styles;
+    }
+  });
 }
 
