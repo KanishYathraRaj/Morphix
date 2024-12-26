@@ -14,20 +14,25 @@ document.getElementById("sendMessage").addEventListener("click", async function(
   addMessage("Processing...", "bot");
 
   try {
-    const dummy = await activeTab(setUniqueId);
-    
-    console.log("Getting Page Source.......................");
-    const pageSource = await getPageSource();
-    console.log("Page Source...............................", pageSource);
+    const customPageSource = createPageSource();
 
-    console.log("Generating Code...........................");
-    const generatedCode = await generateCode(pageSource, userInput.trim());
-    console.log("Generated Code............................", generatedCode);
+    // const d = await activeTab(domStructure);
+    // console.log(d);
+    
+    // const dummy = await activeTab(setUniqueId);
+    
+    // console.log("Getting Page Source.......................");
+    // const pageSource = await getPageSource();
+    // console.log("Page Source...............................", pageSource.length);
+
+    // console.log("Generating Code...........................");
+    // const generatedCode = await generateCode(pageSource, userInput.trim());
+    // console.log("Generated Code............................", generatedCode);
 
     
-    console.log("Applying Generated Code...................");
-    await applyGeneratedCode(generatedCode);
-    console.log("Generated Code Applied....................");
+    // console.log("Applying Generated Code...................");
+    // await applyGeneratedCode(generatedCode);
+    // console.log("Generated Code Applied....................");
     
     document.getElementById("chat-messages").lastElementChild.remove();
 
@@ -224,7 +229,6 @@ async function applyGeneratedCode(generatedCode) {
   });
 }
 
-
 function getPageSource() {
   return new Promise((resolve, reject) => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -265,3 +269,85 @@ function addMessage(message, sender) {
   document.getElementById("chat-messages").appendChild(messageContainer);
 }
 
+async function domStructure(){
+  function traverse(element) {
+    console.log(`Tag: ${element.tagName}, ID: ${element.id}`);
+    Array.from(element.children).forEach(child => traverse(child));
+  }
+  traverse(document.body);
+  return "success at traverse";
+}
+
+function createPageSource() {
+  // Query the active tab in the current window
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tabId = tabs[0].id;
+
+    chrome.scripting.executeScript(
+      {
+        target: { tabId },
+        func: () => {
+          // Function to traverse and reconstruct the page source
+          function traverseDOM(element) {
+            // Handle text nodes
+            if (element.nodeType === Node.TEXT_NODE) {
+              return element.textContent.trim();
+            }
+          
+            // Handle element nodes
+            if (element.nodeType === Node.ELEMENT_NODE) {
+              const tagName = element.tagName.toLowerCase();
+          
+              // Exclude <script> and <style> elements
+              if (tagName === "script" || tagName === "style") {
+                return "";
+              }
+          
+              // Safely extract attributes
+              const attributes = element.attributes
+                ? Array.from(element.attributes)
+                    .map(attr => `${attr.name}="${attr.value}"`)
+                    .join(" ")
+                : "";
+          
+              // Safely extract inline styles
+              const style = element.style && element.style.cssText
+                ? ` style="${element.style.cssText}"`
+                : "";
+          
+              // Traverse child nodes safely
+              const children = element.childNodes
+                ? Array.from(element.childNodes)
+                    .map(child => traverseDOM(child))
+                    .join("")
+                : "";
+          
+              // Construct and return the element's HTML
+              return `<${tagName}${attributes ? " " + attributes : ""}${style}>${children}</${tagName}>`;
+            }
+          
+            // Fallback for other node types
+            return "";
+          }
+          
+
+          const htmlContent = traverseDOM(document.body);
+          const doctype = document.doctype ? `<!DOCTYPE ${document.doctype.name}>` : "";
+          const head = document.head.innerHTML;
+
+          // Full page source
+          return `${doctype}<head>${head}</head>${htmlContent}</html>`;
+        },
+      },
+      (results) => {
+        if (chrome.runtime.lastError) {
+          console.error(`Error: ${chrome.runtime.lastError.message}`);
+        } else if (results && results[0]) {
+          console.log("Page Source Length : ", results[0].result.length);
+          console.log("Page Source:", results[0].result);
+          return results[0].result;
+        }
+      }
+    );
+  });
+}
