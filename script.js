@@ -14,28 +14,17 @@ document.getElementById("sendMessage").addEventListener("click", async function(
   addMessage("Processing...", "bot");
 
   try {
-    const customPageSource = createPageSource();
-
-    // const d = await activeTab(domStructure);
-    // console.log(d);
-    
     // const dummy = await activeTab(setUniqueId);
-    
-    // console.log("Getting Page Source.......................");
-    // const pageSource = await getPageSource();
-    // console.log("Page Source...............................", pageSource.length);
+
+    const customPageSource = createPageSource();
+    const pageSource = await getPageSource();
 
     // console.log("Generating Code...........................");
     // const generatedCode = await generateCode(pageSource, userInput.trim());
-    // console.log("Generated Code............................", generatedCode);
-
-    
     // console.log("Applying Generated Code...................");
     // await applyGeneratedCode(generatedCode);
-    // console.log("Generated Code Applied....................");
     
     document.getElementById("chat-messages").lastElementChild.remove();
-
     addMessage("Changes applied successfully!", "bot");
     
   } catch (error) {
@@ -152,6 +141,7 @@ async function generateCode(pageSource, prompt) {
           const data = await response.json();
           console.log('API response received:', data);
 
+          console.log("Generated Code:\n", data.candidates[0].content.parts[0].text);
           return data.candidates[0].content.parts[0].text;
 
       } catch (error) {
@@ -218,6 +208,7 @@ async function applyGeneratedCode(generatedCode) {
             if (chrome.runtime.lastError) {
               reject(chrome.runtime.lastError.message);
             } else {
+              console.log("Generated Styles applied successfully...............");
               resolve("Styles applied successfully");
             }
           }
@@ -239,6 +230,7 @@ function getPageSource() {
         },
         (injectionResults) => {
           if (injectionResults && injectionResults[0] && injectionResults[0].result) {
+            console.log("Original Page Source: ", injectionResults[0].result.length);
             resolve(injectionResults[0].result);
           } else {
             reject("Failed to get page source");
@@ -267,15 +259,6 @@ function addMessage(message, sender) {
   messageBubble.textContent = message;
   messageContainer.appendChild(messageBubble);
   document.getElementById("chat-messages").appendChild(messageContainer);
-}
-
-async function domStructure(){
-  function traverse(element) {
-    console.log(`Tag: ${element.tagName}, ID: ${element.id}`);
-    Array.from(element.children).forEach(child => traverse(child));
-  }
-  traverse(document.body);
-  return "success at traverse";
 }
 
 function createPageSource() {
