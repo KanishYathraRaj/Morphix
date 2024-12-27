@@ -1,3 +1,13 @@
+// chrome.storage.local.get({ changes: {} }, (result) => {
+//   const changes = result.changes;
+//   for (const [identifier, styles] of Object.entries(changes)) {
+//     const element = document.getElementById(identifier);
+//     if (element) {
+//       element.style.cssText = styles;
+//     }
+//   }
+// });
+
 document.getElementById("userInput").addEventListener("keypress", function(event) {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
@@ -21,8 +31,15 @@ document.getElementById("sendMessage").addEventListener("click", async function(
 
     console.log("Generating Code...........................");
     const generatedCode = await generateCode(customPageSource, userInput.trim());
+
     console.log("Applying Generated Code...................");
-    await applyGeneratedCode(generatedCode);
+    const appliedChanges = await applyGeneratedCode(generatedCode);
+    console.log("Applied Changes:\n",appliedChanges);
+
+    if(appliedChanges !== null){
+      // saveStyleChanges(appliedChanges);
+      storeAppliedChanges(appliedChanges);
+    }
     
     document.getElementById("chat-messages").lastElementChild.remove();
     addMessage("Changes applied successfully!", "bot");
@@ -188,8 +205,10 @@ async function applyGeneratedCode(generatedCode) {
           {
             target: { tabId: tabs[0].id },
             func: (changes) => {
+              const appliedChanges = [];
               changes.forEach(({ uniqueId, modification }) => {
                 const element = document.getElementById(uniqueId);
+                
                 if (element) {
                   // Apply the modification as inline styles
                   const stylePairs = modification.split(';').filter(Boolean);
@@ -199,17 +218,26 @@ async function applyGeneratedCode(generatedCode) {
                       element.style.setProperty(property, value);
                     }
                   });
+                  appliedChanges.push({
+                    element:element, // need modification here dude.....
+                    cssText: element.style.cssText,
+                  });
+                  // localStorage.setItem(uniqueId,element.style.cssText);
                 }
               });
+              return appliedChanges;
             },
             args: [changes],
           },
           (injectionResults) => {
             if (chrome.runtime.lastError) {
               reject(chrome.runtime.lastError.message);
+            } else if (injectionResults && injectionResults[0] && injectionResults[0].result) {
+              const result = injectionResults[0].result;
+              console.log("Generated Styles applied and collected successfully...............");
+              resolve(result);
             } else {
-              console.log("Generated Styles applied successfully...............");
-              resolve("Styles applied successfully");
+              reject("No results returned from the script.");
             }
           }
         );
@@ -344,3 +372,49 @@ function createPageSource(maxDepth = 10) {
   });
 });
 }
+
+function saveStyleChanges(changes) {
+  if (!Array.isArray(changes)) {
+    console.error("Invalid input: 'changes' should be an array.");
+    return;
+  }
+
+  chrome.storage.local.get({ changes: {} }, (result) => {
+    try {
+      if (chrome.runtime.lastError) {
+        throw new Error(`Error retrieving from storage: ${chrome.runtime.lastError.message}`);
+      }
+
+      const storedChanges = result.changes || {};
+
+      changes.forEach(({ uniqueId, modification }) => {
+        if (typeof uniqueId !== "string" || typeof modification !== "string") {
+          throw new Error("Invalid structure: Each change must contain 'uniqueId' and 'modification' as strings.");
+        }
+        storedChanges[uniqueId] = modification;  // Save both uniqueId and the corresponding styles
+      });
+
+      chrome.storage.local.set({ changes: storedChanges }, () => {
+        if (chrome.runtime.lastError) {
+          throw new Error(`Error saving to storage: ${chrome.runtime.lastError.message}`);
+        }
+
+        console.log("Changes saved to storage:", storedChanges);
+      });
+    } catch (error) {
+      console.error("Error in saveStyleChanges function:", error.message);
+    }
+  });
+}
+
+function storeAppliedChanges(appliedChanges) {
+  try {
+    const changesJSON = JSON.stringify(appliedChanges);
+    localStorage.setItem('appliedChanges', changesJSON);
+    console.log('Applied changes stored in localStorage successfully!');
+  } catch (error) {
+    console.error('Error storing applied changes in localStorage:', error);
+  }
+}
+
+
