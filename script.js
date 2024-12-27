@@ -230,7 +230,7 @@ function getPageSource() {
         },
         (injectionResults) => {
           if (injectionResults && injectionResults[0] && injectionResults[0].result) {
-            console.log("Original Page Source: ", injectionResults[0].result.length);
+            console.log("Original Page Source Length : ", injectionResults[0].result.length);
             resolve(injectionResults[0].result);
           } else {
             reject("Failed to get page source");
@@ -335,7 +335,7 @@ function createPageSource(maxDepth = 10) {
           console.error(`Error: ${chrome.runtime.lastError.message}`);
           reject(chrome.runtime.lastError.message);
         } else if (results && results[0]) {
-          console.log("Page Source Length:", results[0].result.length);
+          console.log("Custom Page Source Length:", results[0].result.length);
           console.log("Page Source:", results[0].result);
           resolve(results[0].result);
         }
