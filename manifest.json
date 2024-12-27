@@ -7,7 +7,17 @@
     "activeTab",
     "scripting",
     "unlimitedStorage",
-    "webRequest"
+    "webRequest",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "script.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["script.js"]
+    }
   ],
   "host_permissions": [
     "https://generativelanguage.googleapis.com/*"
