@@ -14,15 +14,15 @@ document.getElementById("sendMessage").addEventListener("click", async function(
   addMessage("Processing...", "bot");
 
   try {
-    // const dummy = await activeTab(setUniqueId);
+    const dummy = await activeTab(setUniqueId);
 
-    const customPageSource = createPageSource();
     const pageSource = await getPageSource();
+    const customPageSource = await createPageSource(14);
 
-    // console.log("Generating Code...........................");
-    // const generatedCode = await generateCode(pageSource, userInput.trim());
-    // console.log("Applying Generated Code...................");
-    // await applyGeneratedCode(generatedCode);
+    console.log("Generating Code...........................");
+    const generatedCode = await generateCode(customPageSource, userInput.trim());
+    console.log("Applying Generated Code...................");
+    await applyGeneratedCode(generatedCode);
     
     document.getElementById("chat-messages").lastElementChild.remove();
     addMessage("Changes applied successfully!", "bot");
@@ -261,7 +261,8 @@ function addMessage(message, sender) {
   document.getElementById("chat-messages").appendChild(messageContainer);
 }
 
-function createPageSource() {
+function createPageSource(maxDepth = 10) {
+  return new Promise((resolve, reject) => {
   // Query the active tab in the current window
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tabId = tabs[0].id;
@@ -269,68 +270,77 @@ function createPageSource() {
     chrome.scripting.executeScript(
       {
         target: { tabId },
-        func: () => {
+        func: (maxDepth) => {
           // Function to traverse and reconstruct the page source
-          function traverseDOM(element) {
+          function traverseDOM(element, depth = 0) {
+            // Stop traversal if max depth is reached
+            if (depth > maxDepth) {
+              return "";
+            }
+
             // Handle text nodes
             if (element.nodeType === Node.TEXT_NODE) {
               return element.textContent.trim();
             }
-          
+
             // Handle element nodes
             if (element.nodeType === Node.ELEMENT_NODE) {
               const tagName = element.tagName.toLowerCase();
-          
+
               // Exclude <script> and <style> elements
               if (tagName === "script" || tagName === "style") {
                 return "";
               }
-          
+
               // Safely extract attributes
               const attributes = element.attributes
                 ? Array.from(element.attributes)
-                    .map(attr => `${attr.name}="${attr.value}"`)
+                    .map((attr) => `${attr.name}="${attr.value}"`)
                     .join(" ")
                 : "";
-          
+
               // Safely extract inline styles
-              const style = element.style && element.style.cssText
-                ? ` style="${element.style.cssText}"`
-                : "";
-          
-              // Traverse child nodes safely
+              const style =
+                element.style && element.style.cssText
+                  ? ` style="${element.style.cssText}"`
+                  : "";
+
+              // Traverse child nodes safely with incremented depth
               const children = element.childNodes
                 ? Array.from(element.childNodes)
-                    .map(child => traverseDOM(child))
+                    .map((child) => traverseDOM(child, depth + 1))
                     .join("")
                 : "";
-          
+
               // Construct and return the element's HTML
               return `<${tagName}${attributes ? " " + attributes : ""}${style}>${children}</${tagName}>`;
             }
-          
-            // Fallback for other node types
+
             return "";
           }
-          
 
           const htmlContent = traverseDOM(document.body);
-          const doctype = document.doctype ? `<!DOCTYPE ${document.doctype.name}>` : "";
+          const doctype = document.doctype
+            ? `<!DOCTYPE ${document.doctype.name}>`
+            : "";
           const head = document.head.innerHTML;
 
           // Full page source
-          return `${doctype}<head>${head}</head>${htmlContent}</html>`;
+          return `${doctype}<html><head>${head}</head><body>${htmlContent}</body></html>`;
         },
+        args: [maxDepth], // Pass maxDepth to the function
       },
       (results) => {
         if (chrome.runtime.lastError) {
           console.error(`Error: ${chrome.runtime.lastError.message}`);
+          reject(chrome.runtime.lastError.message);
         } else if (results && results[0]) {
-          console.log("Page Source Length : ", results[0].result.length);
+          console.log("Page Source Length:", results[0].result.length);
           console.log("Page Source:", results[0].result);
-          return results[0].result;
+          resolve(results[0].result);
         }
       }
     );
   });
+});
 }
