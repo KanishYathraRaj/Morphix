@@ -1,13 +1,3 @@
-// chrome.storage.local.get({ changes: {} }, (result) => {
-//   const changes = result.changes;
-//   for (const [identifier, styles] of Object.entries(changes)) {
-//     const element = document.getElementById(identifier);
-//     if (element) {
-//       element.style.cssText = styles;
-//     }
-//   }
-// });
-
 document.getElementById("userInput").addEventListener("keypress", function(event) {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
@@ -219,7 +209,7 @@ async function applyGeneratedCode(generatedCode) {
                     }
                   });
                   appliedChanges.push({
-                    element:element, // need modification here dude.....
+                    uniqueId, // need modification here dude.....
                     cssText: element.style.cssText,
                   });
                   // localStorage.setItem(uniqueId,element.style.cssText);
@@ -373,40 +363,6 @@ function createPageSource(maxDepth = 10) {
 });
 }
 
-function saveStyleChanges(changes) {
-  if (!Array.isArray(changes)) {
-    console.error("Invalid input: 'changes' should be an array.");
-    return;
-  }
-
-  chrome.storage.local.get({ changes: {} }, (result) => {
-    try {
-      if (chrome.runtime.lastError) {
-        throw new Error(`Error retrieving from storage: ${chrome.runtime.lastError.message}`);
-      }
-
-      const storedChanges = result.changes || {};
-
-      changes.forEach(({ uniqueId, modification }) => {
-        if (typeof uniqueId !== "string" || typeof modification !== "string") {
-          throw new Error("Invalid structure: Each change must contain 'uniqueId' and 'modification' as strings.");
-        }
-        storedChanges[uniqueId] = modification;  // Save both uniqueId and the corresponding styles
-      });
-
-      chrome.storage.local.set({ changes: storedChanges }, () => {
-        if (chrome.runtime.lastError) {
-          throw new Error(`Error saving to storage: ${chrome.runtime.lastError.message}`);
-        }
-
-        console.log("Changes saved to storage:", storedChanges);
-      });
-    } catch (error) {
-      console.error("Error in saveStyleChanges function:", error.message);
-    }
-  });
-}
-
 function storeAppliedChanges(appliedChanges) {
   try {
     const changesJSON = JSON.stringify(appliedChanges);
@@ -416,5 +372,108 @@ function storeAppliedChanges(appliedChanges) {
     console.error('Error storing applied changes in localStorage:', error);
   }
 }
+
+function getAppliedChanges() {
+
+  const changesJSON = localStorage.getItem('appliedChanges');
+
+  return new Promise((resolve, reject) => {
+  // Query the active tab in the current window
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tabId = tabs[0].id;
+
+      chrome.scripting.executeScript(
+        {
+          target: { tabId },
+          func: (changesJSON) => {
+            try {
+              if (changesJSON) {
+                const appliedChanges = JSON.parse(changesJSON);
+    
+                appliedChanges.forEach((change, index) => {
+                  console.log(`Item ${index + 1}:`);
+                  console.log(`Unique ID: ${change.uniqueId}`);
+                  console.log(`CSS Text: ${change.cssText}`);
+                  const element = document.getElementById(change.uniqueId);
+                  element.style.cssText = change.cssText;
+                  console.log(`Applied successfully for ${change.uniqueId} : `, element.style.cssText);
+                });
+
+              } else {
+                console.log('No applied changes found in localStorage.');
+              }
+              return "success";
+            } catch (error) {
+              console.error('Error retrieving or parsing applied changes:', error);
+              return "failure";
+            }
+          
+          },
+          args: [changesJSON],
+        },
+        (results) => {
+          if (chrome.runtime.lastError) {
+            console.error(`Error: ${chrome.runtime.lastError.message}`);
+            reject(chrome.runtime.lastError.message);
+          } else if (results && results[0]) {
+            console.log("Applied changes", results[0].result);
+            resolve(results[0].result);
+          }
+        }
+      );
+      
+    });
+  });
+}
+
+function activeTabloaded()
+{
+  return new Promise((resolve, reject) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs[0]?.id) {
+        reject(new Error("No active tab found"));
+        return;
+      }
+      
+      chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id },
+        func: () => document.readyState === "complete",
+      })
+      .then(results => {
+        if (results && results[0] && results[0].result !== undefined) {
+
+          if(results[0].result != "true"){
+            console.log("Active Document ready state:", results[0].result);
+          }
+          resolve(results[0].result != "true" ? true : false);
+        } else {
+          reject(new Error("No results from tab execution"));
+        }
+      })
+      .catch(error => {
+        reject(new Error(`Tab execution failed: ${error.message}`));
+      });
+    });
+  });
+}
+
+document.addEventListener("readystatechange", async function () {
+  try {
+    // Wait for activeTabloaded to complete and return a value
+    const activeTabLoaded = await activeTabloaded();
+    
+    if (activeTabLoaded === true) {
+
+      console.log("Active page fullly loaded : " , activeTabLoaded );
+      await activeTab(setUniqueId);
+      console.log("setUniqueId completed.");
+      getAppliedChanges();
+    }
+  } catch (error) {
+    console.error("Error during initialization:", error);
+  }
+});
+
+
 
 
