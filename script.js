@@ -458,9 +458,8 @@ function activeTabloaded()
   });
 }
 
-document.addEventListener("readystatechange", async function () {
+async function loadChanges () {
   try {
-    // Wait for activeTabloaded to complete and return a value
     const activeTabLoaded = await activeTabloaded();
     
     if (activeTabLoaded === true) {
@@ -472,7 +471,9 @@ document.addEventListener("readystatechange", async function () {
   } catch (error) {
     console.error("Error during initialization:", error);
   }
-});
+}
+
+loadChanges();
 
 
 
