@@ -177,14 +177,17 @@ async function applyGeneratedCode(generatedCode) {
       const changesSection = changesMatch[1].trim();
 
       // Parse the changes into an array of objects
-      const changes = [...changesSection.matchAll(/UNIQUE_ID:\s*(\S+)[\s\S]*?MODIFICATION:\s*"([\s\S]*?)"/g)]
-      .filter((match) => match[1].trim().slice(-1) !== ';') // THIS LINE CURRENTLY FIXES THE PARSING ERROR IN GENERATED CODE DUDE.......
+      const changes = [...changesSection.matchAll(/UNIQUE_ID:\s*(uid-\d+)[\s\S]*?MODIFICATION:\s*"([\s\S]*?)"/g)]
+      .filter((match) => match[2].trim().slice(-1) === ';')  // Ensures the modification ends with a semicolon
       .map(
         (match) => ({
           uniqueId: match[1].trim(),
           modification: match[2].trim(),
         })
       );
+    
+    console.log(changes);
+    
 
       if (changes.length === 0) {
         throw new Error("No valid modifications found in the changes section");
@@ -367,6 +370,9 @@ function createPageSource(maxDepth = 10) {
 function storeAppliedChanges(appliedChanges) {
   try {
     const changesJSON = JSON.stringify(appliedChanges);
+    chrome.storage.local.set({ appliedChanges: changesJSON }, () => {
+      console.log("Data saved to local storage.");
+    });
     localStorage.setItem('appliedChanges', changesJSON);
     console.log('Applied changes stored in localStorage successfully!');
   } catch (error) {
@@ -392,9 +398,6 @@ function getAppliedChanges() {
                 const appliedChanges = JSON.parse(changesJSON);
     
                 appliedChanges.forEach((change, index) => {
-                  console.log(`Item ${index + 1}:`);
-                  console.log(`Unique ID: ${change.uniqueId}`);
-                  console.log(`CSS Text: ${change.cssText}`);
                   const element = document.getElementById(change.uniqueId);
                   element.style.cssText = change.cssText;
                   console.log(`Applied successfully for ${change.uniqueId} : `, element.style.cssText);
@@ -473,7 +476,7 @@ async function loadChanges () {
   }
 }
 
-loadChanges();
+// loadChanges();
 
 
 

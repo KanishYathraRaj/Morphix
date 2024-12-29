@@ -4,6 +4,7 @@
   "version": "1.0",
   "description": "Gommala Morphix Vantan da... Ella Odunga da....",
   "permissions": [
+    "tabs",
     "activeTab",
     "scripting",
     "unlimitedStorage",
@@ -11,20 +12,21 @@
     "storage"
   ],
   "background": {
-    "service_worker": "script.js"
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["script.js"]
+      "js": ["script.js","background.js"]
     }
   ],
   "host_permissions": [
-    "https://generativelanguage.googleapis.com/*"
+    "https://generativelanguage.googleapis.com/*",
+    "<all_urls>"
   ],
   "web_accessible_resources": [
     {
-      "resources": ["script.js"],
+      "resources": ["script.js","background.js"],
       "matches": ["<all_urls>"]
     }
   ],
