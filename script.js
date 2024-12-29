@@ -457,22 +457,21 @@ function activeTabloaded()
   });
 }
 
-document.addEventListener("readystatechange", async function () {
-  try {
-    // Wait for activeTabloaded to complete and return a value
-    const activeTabLoaded = await activeTabloaded();
+// document.addEventListener("readystatechange", async function () {
+//   try {
+//     // Wait for activeTabloaded to complete and return a value
+//     const activeTabLoaded = await activeTabloaded();
     
-    if (activeTabLoaded === true) {
-
-      console.log("Active page fullly loaded : " , activeTabLoaded );
-      await activeTab(setUniqueId);
-      console.log("setUniqueId completed.");
-      getAppliedChanges();
-    }
-  } catch (error) {
-    console.error("Error during initialization:", error);
-  }
-});
+//     if (activeTabLoaded === true) {
+//       console.log("Active page fullly loaded : " , activeTabLoaded );
+//       await activeTab(setUniqueId);
+//       console.log("setUniqueId completed.");
+//       getAppliedChanges();
+//     }
+//   } catch (error) {
+//     console.error("Error during initialization:", error);
+//   }
+// });
 
 
 
