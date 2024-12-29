@@ -27,7 +27,6 @@ document.getElementById("sendMessage").addEventListener("click", async function(
     console.log("Applied Changes:\n",appliedChanges);
 
     if(appliedChanges !== null){
-      // saveStyleChanges(appliedChanges);
       storeAppliedChanges(appliedChanges);
     }
     
@@ -178,7 +177,9 @@ async function applyGeneratedCode(generatedCode) {
       const changesSection = changesMatch[1].trim();
 
       // Parse the changes into an array of objects
-      const changes = [...changesSection.matchAll(/UNIQUE_ID:\s*(\S+)[\s\S]*?MODIFICATION:\s*"([\s\S]*?)"/g)].map(
+      const changes = [...changesSection.matchAll(/UNIQUE_ID:\s*(\S+)[\s\S]*?MODIFICATION:\s*"([\s\S]*?)"/g)]
+      .filter((match) => match[1].trim().slice(-1) !== ';') // THIS LINE CURRENTLY FIXES THE PARSING ERROR IN GENERATED CODE DUDE.......
+      .map(
         (match) => ({
           uniqueId: match[1].trim(),
           modification: match[2].trim(),
@@ -457,21 +458,21 @@ function activeTabloaded()
   });
 }
 
-// document.addEventListener("readystatechange", async function () {
-//   try {
-//     // Wait for activeTabloaded to complete and return a value
-//     const activeTabLoaded = await activeTabloaded();
+document.addEventListener("readystatechange", async function () {
+  try {
+    // Wait for activeTabloaded to complete and return a value
+    const activeTabLoaded = await activeTabloaded();
     
-//     if (activeTabLoaded === true) {
-//       console.log("Active page fullly loaded : " , activeTabLoaded );
-//       await activeTab(setUniqueId);
-//       console.log("setUniqueId completed.");
-//       getAppliedChanges();
-//     }
-//   } catch (error) {
-//     console.error("Error during initialization:", error);
-//   }
-// });
+    if (activeTabLoaded === true) {
+      console.log("Active page fullly loaded : " , activeTabLoaded );
+      await activeTab(setUniqueId);
+      console.log("setUniqueId completed.");
+      getAppliedChanges();
+    }
+  } catch (error) {
+    console.error("Error during initialization:", error);
+  }
+});
 
 
 
