@@ -341,7 +341,7 @@ function createPageSource(maxDepth = 10) {
           const doctype = document.doctype
             ? `<!DOCTYPE ${document.doctype.name}>`
             : "";
-          const head = document.head.innerHTML;
+          const head = "\ndocument.head.innerHTML\n";
 
           // Full page source
           return `${doctype}<html><head>${head}</head><body>${htmlContent}</body></html>`;
