@@ -1,5 +1,7 @@
+console.log("Content Script loaded!");
+
 document.getElementById("userInput").addEventListener("keypress", function(event) {
-  if (event.key === "Enter" && !event.shiftKey) {
+  if (event != null && event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
     document.getElementById("sendMessage").click();
   }
@@ -27,7 +29,8 @@ document.getElementById("sendMessage").addEventListener("click", async function(
     console.log("Applied Changes:\n",appliedChanges);
 
     if(appliedChanges !== null){
-      storeAppliedChanges(appliedChanges);
+      const url = await getActiveTabURL();
+      storeAppliedChanges(appliedChanges , url);
     }
     
     document.getElementById("chat-messages").lastElementChild.remove();
@@ -367,22 +370,22 @@ function createPageSource(maxDepth = 10) {
 });
 }
 
-function storeAppliedChanges(appliedChanges) {
+function storeAppliedChanges(appliedChanges , url) {
   try {
     const changesJSON = JSON.stringify(appliedChanges);
-    chrome.storage.local.set({ appliedChanges: changesJSON }, () => {
-      console.log("Data saved to local storage.");
+    chrome.storage.local.set({ [url]: changesJSON }, () => {
+      console.log(`Data saved to local storage on " ${url} "`);
     });
-    localStorage.setItem('appliedChanges', changesJSON);
+    localStorage.setItem(url, changesJSON);
     console.log('Applied changes stored in localStorage successfully!');
   } catch (error) {
     console.error('Error storing applied changes in localStorage:', error);
   }
 }
 
-function getAppliedChanges() {
+function getAppliedChanges(url) {
 
-  const changesJSON = localStorage.getItem('appliedChanges');
+  const changesJSON = localStorage.getItem(url);
 
   return new Promise((resolve, reject) => {
   // Query the active tab in the current window
@@ -461,7 +464,7 @@ function activeTabloaded()
   });
 }
 
-async function loadChanges () {
+async function loadChanges (url) {
   try {
     const activeTabLoaded = await activeTabloaded();
     
@@ -469,14 +472,42 @@ async function loadChanges () {
       console.log("Active page fullly loaded : " , activeTabLoaded );
       await activeTab(setUniqueId);
       console.log("setUniqueId completed.");
-      getAppliedChanges();
+      getAppliedChanges(url);
     }
   } catch (error) {
     console.error("Error during initialization:", error);
   }
 }
 
-// loadChanges();
+function getActiveTabURL() {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs.length > 0) {
+        const activeTab = new URL(tabs[0].url); 
+        const activeTabURL = activeTab.hostname; 
+        console.log("Active Tab URL:", activeTabURL);
+        resolve(activeTabURL);
+      } else {
+        reject(new Error("No active tab found!"));
+      }
+    });
+  });
+}
+
+// chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+//   if (tabs.length > 0) {
+//     const activeTab = new URL(tabs[0].url); 
+//     const activeTabURL = activeTab.hostname; 
+//     console.log("Active Tab URL:", activeTabURL);
+//     loadChanges(activeTabURL);
+//   } else {
+//     console.error("No active tab found!");
+//   }
+// });
+
+
+
+
 
 
 
