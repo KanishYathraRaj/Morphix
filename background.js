@@ -7,7 +7,7 @@ setTimeout(() => {
         console.log("Value for 'AppliedChanges':", result.appliedChanges);
         getAppliedChanges(result.appliedChanges);
     });
-}, 500);
+}, 2000);
 
 function getAppliedChanges(changesJSON) {
     try {
